@@ -1,6 +1,9 @@
 import { test, Page, expect } from '@playwright/test';
 import HomePage from '../../pages/HomePage';
 import FilterMenuPage from '../../pages/FilterMenuPage';
+import { Gender } from '../../enums/Gender';
+import { IFilterOption } from '../../interfaces/IFilterOption';
+import { Price } from '../../enums/Price';
 
 test.describe('Filtering tests', () => {
     test('TestId: 004. User can filter products by category and view the correct results', async ({ page }) => {
@@ -17,6 +20,30 @@ test.describe('Filtering tests', () => {
         await expect(filterMenu.selectedCategoryTitle).toHaveText(expectedTitle);
 
         expect(await filterMenu.getGenderCounter()).toEqual('1');
+    });
+    test('TestId: 005. User can filter shoes products by gender, price range, and sale', async ({ page }) => {
+        let homePage = new HomePage(page);
+        await homePage.goTo('w/shoes-y7ok');
+        
+        let filterMenu = new FilterMenuPage(page);
+        const filterCriteria:IFilterOption = {
+            gender: [Gender.Women],
+            price: [],
+            sale: false,
+        };
+        await filterMenu.applyFilter(filterCriteria);
+        await filterMenu.checkFilteredResult(filterCriteria);
     })
-    
+    test('TestId: 005. User can filter clothing products by gender, price range, and sale', async ({ page }) => {
+        let homePage = new HomePage(page);
+        await homePage.goTo('w/clothing-6ymx6');
+        
+        let filterMenu = new FilterMenuPage(page);
+        const filterCriteria:IFilterOption = {
+            gender: [Gender.Men],
+            price: [Price.Range0_74, Price.Range74_150],
+            sale: true,
+        };
+        await filterMenu.applyFilter(filterCriteria);
+    })
 })
