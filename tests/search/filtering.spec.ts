@@ -26,24 +26,25 @@ test.describe('Filtering tests', () => {
         await homePage.goTo('w/shoes-y7ok');
         
         let filterMenu = new FilterMenuPage(page);
-        const filterCriteria:IFilterOption = {
-            gender: [Gender.Women],
-            price: [],
-            sale: false,
+        let filterCriteria:IFilterOption = {
+            gender: [Gender.Women, Gender.Men],
+            price: [Price.Range150_220],
+            sale: true,
         };
         await filterMenu.applyFilter(filterCriteria);
         await filterMenu.checkFilteredResult(filterCriteria);
     })
-    test('TestId: 005. User can filter clothing products by gender, price range, and sale', async ({ page }) => {
+    test('TestId: 006. User can filter clothing products by gender, price range, and sale', async ({ page }) => {
         let homePage = new HomePage(page);
         await homePage.goTo('w/clothing-6ymx6');
         
         let filterMenu = new FilterMenuPage(page);
-        const filterCriteria:IFilterOption = {
-            gender: [Gender.Men],
-            price: [Price.Range0_74, Price.Range74_150],
+        let filterCriteria:IFilterOption = {
+            gender: [Gender.Women, Gender.Men],
+            price: [Price.Range150_220, Price.Range220],
             sale: true,
         };
         await filterMenu.applyFilter(filterCriteria);
+        await filterMenu.checkFilteredResult(filterCriteria);
     })
 })

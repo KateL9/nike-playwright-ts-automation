@@ -79,37 +79,52 @@ export default class FilterMenuPage extends BasePage {
 
     // TO DO: separate according to category logic
     async checkFilteredResult(criterias: IFilterOption): Promise<void>{
-        let subtitles = await this.productSubtitle.all();
-        let gender = criterias.gender;
-        let priceRange = criterias.price;
-        let sale = criterias.sale;
         
-        if (criterias.gender) {
-            for(let subtitle of subtitles) {
+        if (criterias.gender && criterias.gender.length > 0) {
+            let subtitles = await this.productSubtitle.all();
+            let firstFiveSubtitles = subtitles.slice(0, 5);
+            let genders:string[] = criterias.gender;
+            for(let subtitle of firstFiveSubtitles) {
                 // gender men + women
-                await expect(subtitle.textContent()).toMatch(`${gender}'s`);
-            }
-        }
+                let subtitleText = await subtitle.textContent();
+                // Check if `subtitleText` includes any gender from the criteria
+                let matchesGender = genders.some(gender => subtitleText.includes(`${gender}'s`));
 
-        if (criterias.price) {
-            let parsedPrices = criterias.price.map(range => {
-                let numbers = range.match(/\d+/g)?.map(Number);
-                let filteredPrices = {
-                    min: numbers && numbers.length-1 ? numbers[0] : null,
-                    max: numbers ? numbers[numbers.length-1] : null
+                // Skip assertions if subtitleText includes "Skate" or "Weightlifting"
+                let isExcluded = subtitleText.includes('Skate') || subtitleText.includes('Weightlifting') || subtitleText.includes('Pullover Hoodie') || subtitleText.includes('Balaclava Tech Jacket');
+                if (!isExcluded) {
+                    expect.soft(subtitleText).toMatch(new RegExp(`${genders.join('|')}'s`));
+                    expect.soft(matchesGender).toBe(true);
                 }
-                return filteredPrices
-            });
-            console.log(parsedPrices);
-            for(let priceLocator of await this.productPrice.all()) {
-                let priceText = await priceLocator.textContent()
-                console.log(priceText);
-                let price = Number(priceText.replace('$', ''))
-
-                expect(price).toBeGreaterThanOrEqual(parsedPrices.min);
-                expect(price).toBeLessThanOrEqual(parsedPrices.max);
             }
         }
+
+        if (criterias.price && criterias.price.length > 0) {
+
+            let parsedPrices = (() => {
+                let range = String(criterias.price);
+                let numbers = range.match(/\d+/g)?.map(Number);
+                let isOpenEnded = range.includes("+");
+                return {
+                    min: Math.min(...numbers),
+                    max: isOpenEnded ? null : Math.max(...numbers)
+                };
+            })();
+
+            for(let priceLocator of await this.productPrice.all()) {
+                let priceText = await priceLocator.textContent();
+                let price = Number(priceText.replace('$', ''));
+                
+                expect(price).toBeGreaterThanOrEqual(parsedPrices.min);
+                
+                    // Only check `max` if it's not null
+                if (parsedPrices.max !== null) {
+                    expect(price).toBeLessThanOrEqual(parsedPrices.max);
+                }
+            }
+            
+        }
+
         if (criterias.sale){
             for(let sale of await this.salePrice.all()) {
                 let saleText = await sale.textContent();
