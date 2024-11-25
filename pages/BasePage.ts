@@ -8,4 +8,7 @@ export default class BasePage {
     async goTo(url: string) {
         await this.page.goto(url);
     }
+
+    // get current url
+    // notifications, reload page
 }

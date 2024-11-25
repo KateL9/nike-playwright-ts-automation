@@ -8,6 +8,7 @@ export default class SearchResultPage extends BasePage {
     public searchResults: Locator;
     private productCardCounter: Locator;
     private noResults: Locator;
+    private firstProductItem: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -16,6 +17,7 @@ export default class SearchResultPage extends BasePage {
         this.productCardCounter = this.page.locator('[data-testid="product-card"]');
         this.noResults = this.page.locator('span[data-test="no-results-title"]');
 
+        this.firstProductItem = this.page.getByTestId('wall-image-loader').nth(0);
         this.firstProductCardTitle = this.page.locator('div.product-card__title').nth(0);
         this.searchResults = this.page.locator('div.results__body');
     }
@@ -54,5 +56,9 @@ export default class SearchResultPage extends BasePage {
         } catch {
             return false;
         }
+    }
+
+    async clickFirstProductItem() {
+        await this.firstProductItem.click()
     }
 }
